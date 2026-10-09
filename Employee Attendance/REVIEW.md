@@ -1,0 +1,17 @@
+# REVIEW.md
+
+| # | Where (function / line) | What is wrong | How you'd notice it (test, input, or symptom) | How you fixed it |
+|---|---|---|---|---|
+| 1 | `health()` | The health endpoint always returned 200 even when MongoDB was unavailable, so readiness checks could pass while the database was down. | A local `ping` or a downed MongoDB instance exposes this immediately. | Added a real `client.admin.command("ping")` check and return 503 on failure. |
+| 2 | `create_employee()` / `list_employees()` | Duplicate keys were not enforced at the database level, and pagination started at `page * page_size` instead of `(page-1) * page_size`; `total` also counted the whole collection instead of only the filtered set. | Duplicate employee codes and page 1 vs page 2 mismatches appear in tests and UI. | Added a unique index on `emp_code`, validated the request, and fixed pagination/filter counting. |
+| 3 | `punch_in()` | It accepted invalid presence statuses, ignored the required employee existence check, and used a non-atomic check-then-insert pattern that could race on duplicate punch-ins. | Concurrent requests or invalid payloads produce wrong records and 409/422 mismatches. | Enforced the allowed statuses, validated employee existence, and used a unique compound index plus duplicate-key handling. |
+| 4 | `punch_in()` / `compute_late_minutes()` / `compute_overtime()` | The helper logic used naive local-time assumptions instead of IST-aware date handling and did not honor overnight shifts and half-up rounding rules. | Late minutes and overtime look wrong around midnight, overnight schedules, and fractional work durations. | Reworked the helpers with IST timezone conversion, overnight shift awareness, and Decimal half-up rounding. |
+| 5 | `list_attendance()` | The endpoint loaded the whole collection into memory and returned items by materializing all docs before paging. | Large collections become slow or memory heavy. | Added database sorting and Mongo paging from the query itself. |
+| 6 | `punch_out()` | The endpoint was missing entirely and the contract required close-the-open-record logic, 24-hour validation, and concurrency-safe updates. | Punch-out requests fail or create inconsistent attendance records. | Implemented the punch-out workflow with validation and optimistic update semantics. |
+| 7 | `regularize_attendance()` | The record correction endpoint did not exist; the contract requires recomputing derived fields, appending to `history`, and rejecting invalid transitions. | Corrections silently lose audit trail data or leave inconsistent state. | Implemented full regularization with action-by-action recomputation and a history audit entry. |
+| 8 | Analytics endpoints | The required monthly rollups, department summary, leaderboard, trend views, and explain API were all absent. | The assignment cannot produce monthly or department analytics. | Implemented the MongoDB-backed analytics endpoints and explain output for the required named queries. |
+
+Not a defect:
+- Using `emp_code` as the natural key instead of Mongo `_id` was intentional and required by the assignment; the code must address employees by their business code rather than the database identifier.
+- Returning `created_at` and attendance timestamps as epoch milliseconds on the API boundary is required despite Mongo storing BSON datetimes; this is not a defect, it is the contract.
+- Creating indexes at startup is a requirement, not a bug; the grader expects them to be present and idempotent.

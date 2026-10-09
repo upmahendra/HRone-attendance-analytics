@@ -1,0 +1,139 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>HROne Attendance Dashboard</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com" />
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet" />
+    <link rel="stylesheet" href="styles.css" />
+  </head>
+  <body>
+    <div class="app-shell">
+      <header class="topbar">
+        <div>
+          <p class="eyebrow">HROne</p>
+          <h1>Attendance Command Center</h1>
+        </div>
+        <div class="header-pill">
+          <span class="dot"></span>
+          API Online
+        </div>
+      </header>
+
+      <main class="grid-layout">
+        <section class="panel stats-panel">
+          <div class="panel-title-row">
+            <h2>Overview</h2>
+            <div class="inline-field">
+              <label for="monthFilter">Month</label>
+              <input id="monthFilter" type="month" value="2026-09" />
+            </div>
+          </div>
+
+          <div class="stats-grid" id="statsGrid">
+            <div class="stat-box accent">
+              <span>Total employees</span>
+              <strong id="totalEmployees">--</strong>
+            </div>
+            <div class="stat-box">
+              <span>Departments</span>
+              <strong id="departmentsCount">--</strong>
+            </div>
+            <div class="stat-box">
+              <span>Late count</span>
+              <strong id="lateCount">--</strong>
+            </div>
+            <div class="stat-box">
+              <span>Avg work hours</span>
+              <strong id="avgHours">--</strong>
+            </div>
+          </div>
+        </section>
+
+        <section class="panel">
+          <h2>Quick employee actions</h2>
+          <form id="employeeForm" class="stack-form">
+            <div class="two-col">
+              <input name="emp_code" placeholder="EMP0007" required />
+              <input name="name" placeholder="Employee name" required />
+            </div>
+            <div class="two-col">
+              <input name="email" type="email" placeholder="employee@company.com" required />
+              <input name="department" placeholder="Department" required />
+            </div>
+            <div class="two-col">
+              <input name="shift_start" value="09:30" placeholder="09:30" required />
+              <input name="shift_end" value="18:30" placeholder="18:30" required />
+            </div>
+            <input name="joined_on" type="date" required />
+            <button type="submit">Create employee</button>
+          </form>
+        </section>
+
+        <section class="panel">
+          <h2>Punch in / out</h2>
+          <div class="stack-form">
+            <div class="two-col">
+              <input id="punchEmpCode" placeholder="Employee code" />
+              <select id="attendanceStatus">
+                <option value="PRESENT">PRESENT</option>
+                <option value="WFH">WFH</option>
+                <option value="ON_DUTY">ON_DUTY</option>
+              </select>
+            </div>
+            <div class="two-col compact-buttons">
+              <button class="primary" id="punchInBtn">Punch in</button>
+              <button class="secondary" id="punchOutBtn">Punch out</button>
+            </div>
+          </div>
+        </section>
+
+        <section class="panel full-span">
+          <div class="panel-title-row">
+            <h2>Employees</h2>
+            <button class="ghost-btn" id="refreshBtn">Refresh</button>
+          </div>
+          <div class="table-wrap">
+            <table>
+              <thead>
+                <tr>
+                  <th>Code</th>
+                  <th>Name</th>
+                  <th>Dept</th>
+                  <th>Shift</th>
+                  <th>Joined</th>
+                </tr>
+              </thead>
+              <tbody id="employeesTableBody"></tbody>
+            </table>
+          </div>
+        </section>
+
+        <section class="panel full-span">
+          <h2>Department summary</h2>
+          <div class="table-wrap">
+            <table>
+              <thead>
+                <tr>
+                  <th>Department</th>
+                  <th>Headcount</th>
+                  <th>Present days</th>
+                  <th>Avg work hours</th>
+                  <th>Late count</th>
+                  <th>Total late minutes</th>
+                </tr>
+              </thead>
+              <tbody id="departmentSummaryBody"></tbody>
+            </table>
+          </div>
+        </section>
+      </main>
+    </div>
+
+    <div id="toast" class="toast"></div>
+
+    <script src="app.js"></script>
+  </body>
+</html>
